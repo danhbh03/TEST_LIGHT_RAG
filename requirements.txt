@@ -1,0 +1,5 @@
+evaluate==0.4.5
+gradio==5.39.0
+lightrag_hku==1.4.4
+nest_asyncio==1.6.0
+python_docx==1.2.0
