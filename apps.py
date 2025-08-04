@@ -1,12 +1,12 @@
 import os
 import gradio as gr
 import asyncio
+from docx import Document
 from lightrag import LightRAG, QueryParam
 from lightrag.llm.ollama import ollama_model_complete, ollama_embed
 from lightrag.kg.shared_storage import initialize_pipeline_status
 from lightrag.utils import EmbeddingFunc, setup_logger
 import re
-from docx import Document
 
 setup_logger("lightrag", level="INFO")
 
@@ -124,11 +124,12 @@ async def RAG_chatbot(message, history, rag, file):
     prompt = f"""
     Based on the internal document, extract information related to the topic below:
     - DO NOT ADD ANY PERSONAL OPINION.
-    - Only return content that is directly found in the document.
+    - Do not fabricate or assume any information.
+    - You are allowed to paraphrase and summarize **as long as the meaning is preserved from the original document**.
     - Only return examples that are explicitly stated in the internal document. Do not invent new examples or scenarios, even if they might be helpful.
     - If the document does not contain any information related to the topic, return "No information found in the document.
     - DO NOT USE ADDITIONAL INFOMATION LIKE "References","Created date" or "Entity name" OR EVEN "from the Knowledge Graph" in the response.
-    - If multiple references have similar meaning, only return the first one.
+    - If multiple references have similar meaning, remove the later once.
     Topic: {message}
     """.strip()
 
@@ -160,7 +161,7 @@ async def main():
             send_btn = gr.Button("📩 Gửi")
             upload_btn = gr.Button("📥 Thêm tài liệu")
 
-        file_input = gr.File(label="📄 Upload file .txt/.md/.docx", file_types=[".txt", ".md", ".docx"])
+        file_input = gr.File(label="📄 Upload file .txt/.docx", file_types=[".txt", ".docx"])
         upload_result = gr.Textbox(label="Kết quả thêm tài liệu", interactive=False)
 
         upload_btn.click(fn=add_document_to_rag, inputs=[file_input, rag_state], outputs=[upload_result, is_rag_ready])
